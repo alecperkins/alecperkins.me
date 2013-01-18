@@ -4,12 +4,17 @@ max_score = -1
 min_score = 1e10
 
 
+# calculate item widths
+# assemble rows
+
+
 calcWidth = (score) ->
     half_grid = 306 / 2
-    console.log (score / max_score)
-    width = (half_grid + ((score / max_score) * half_grid)).toFixed(0)
-    console.log 'score', score, 'width', width
+    width = parseInt(half_grid + ((score / max_score) * half_grid))
     return width
+
+
+
 
 renderInstagram = (item) ->
     photo = item.data
@@ -25,7 +30,7 @@ renderInstagram = (item) ->
     width = calcWidth(score)
     $photo.css
         'width': "#{ width }px"
-    return $photo
+    return [$photo, width]
 
 
 
@@ -66,14 +71,15 @@ renderTwitter = (item) ->
 
     half_grid = grid_size / 2
     font_size = (half_grid + (score / max_score * half_grid)).toFixed(0)
-    console.log font_size
+
     if font_size > grid_size
         font_size = grid_size
+    width = calcWidth(score)
     $tweet.css
         'font-size': "#{ font_size }px"
-        'width': "#{ calcWidth(score) }px"
+        'width': "#{ width }px"
 
-    return $tweet
+    return [$tweet, width]
 
 
 
@@ -102,23 +108,59 @@ setMaxMin = (score) ->
 $content = $('.content')
 
 items = {}
+item_list = []
 
 
-
-displayItems = ->
+assembleItems = ->
     if items.twitter? and items.instagram?
-        item_list = []
         item_list.push(items.twitter...)
         item_list.push(items.instagram...)
         item_list.sort (a, b) -> b.score - a.score
-        $.each item_list, (i, item) ->
-            if item.type is 'instagram'
-                item.html = renderInstagram(item)
-            else
-                item.html = renderTwitter(item)
+        displayItems()
 
-            item.html.attr('title', item.score)
-            $content.append(item.html)
+displayItems = ->
+    $content.empty()
+    window_width = $(window).width()
+    new_row = []
+    row_width = 0
+    all_rows = []
+    max_row_width = 0
+    $.each item_list, (i, item) ->
+        if item.type is 'instagram'
+            [item.html, item.width] = renderInstagram(item)
+        else
+            [item.html, item.width] = renderTwitter(item)
+
+        item.html.attr('title', item.score)
+        # console.log item.width
+        if row_width + item.width + 48 < window_width
+            new_row.push(item)
+            row_width += item.width + 48
+        else
+            console.log row_width
+            if row_width > max_row_width
+                max_row_width = row_width
+            all_rows.push(new_row)
+            row_width = item.width + 48
+            new_row = [item]
+
+
+    $.each all_rows, (i, row) ->
+        $row = $('<div class="row"></div>')
+        $row.css
+            width: "#{ max_row_width }px"
+        for i in row
+            $row.append(i.html)
+        $content.append($row)
+
+resize_timeout = null
+$(window).on 'resize', ->
+    if not resize_timeout
+        resize_timeout = setTimeout ->
+            displayItems()
+            resize_timeout = null
+        , 1000
+
 
 $.getJSON '/data/instagram', (response) ->
     items.instagram = []
@@ -129,7 +171,7 @@ $.getJSON '/data/instagram', (response) ->
             data    : item
             score   : score
             type    : 'instagram'
-    displayItems()
+    assembleItems()
 
 $.getJSON '/data/twitter', (response) ->
     items.twitter = []
@@ -140,7 +182,7 @@ $.getJSON '/data/twitter', (response) ->
             data    : item
             score   : score
             type    : 'twitter'
-    displayItems()
+    assembleItems()
 
 
 
