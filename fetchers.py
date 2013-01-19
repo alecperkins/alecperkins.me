@@ -1,14 +1,19 @@
 import requests, json
 import oauth2
 
-import secrets
+# import secrets
+import os
 
-
+INSTAGRAM_ACCESS_TOKEN = os.environ['INSTAGRAM_ACCESS_TOKEN']
+TWITTER_CONSUMER_KEY = os.environ['TWITTER_CONSUMER_KEY']
+TWITTER_CONSUMER_SECRET = os.environ['TWITTER_CONSUMER_SECRET']
+TWITTER_ACCESS_TOKEN = os.environ['TWITTER_ACCESS_TOKEN']
+TWITTER_ACCESS_TOKEN_SECRET = os.environ['TWITTER_ACCESS_TOKEN_SECRET']
 
 def fetchTwitter():
     url = 'https://api.twitter.com/1.1/statuses/user_timeline.json?include_entities=true&screen_name=alecperkins&include_rts=false&exclude_replies=true&count=200'
-    consumer = oauth2.Consumer(key=secrets.TWITTER_CONSUMER_KEY, secret=secrets.TWITTER_CONSUMER_SECRET)
-    token = oauth2.Token(key=secrets.TWITTER_ACCESS_TOKEN, secret=secrets.TWITTER_ACCESS_TOKEN_SECRET)
+    consumer = oauth2.Consumer(key=TWITTER_CONSUMER_KEY, secret=TWITTER_CONSUMER_SECRET)
+    token = oauth2.Token(key=TWITTER_ACCESS_TOKEN, secret=TWITTER_ACCESS_TOKEN_SECRET)
     client = oauth2.Client(consumer, token)
     response, content = client.request(url, method='GET')
     if response['status'] != '200':
@@ -30,7 +35,7 @@ def fetchTwitter():
 
 
 def fetchInstagram():
-    url = 'https://api.instagram.com/v1/users/self/media/recent?access_token=%s' % (secrets.INSTAGRAM_ACCESS_TOKEN,)
+    url = 'https://api.instagram.com/v1/users/self/media/recent?access_token=%s' % (INSTAGRAM_ACCESS_TOKEN,)
     response = requests.get(url)
     if response.status_code != 200:
         return []
