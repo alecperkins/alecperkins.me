@@ -28,8 +28,31 @@
     return [$photo, width];
   };
 
-  selectColor = function() {
-    return ['rgba(255,0,0,0.1)', 'rgba(0,255,0,0.1)', 'rgba(0,0,255,0.1)'][parseInt(Math.random() * 3)];
+  selectColor = function(date) {
+    var blend_percent, color, color_index, colors, dc, hours, opacity, prev_color, prev_color_index;
+    console.log('date', date);
+    colors = [[255, 87, 56], [255, 212, 0], [117, 219, 137]];
+    hours = (new Date(date)).getHours();
+    if (hours < 0) {
+      hours = 24 + hours;
+    }
+    color_index = hours % 3;
+    color = colors[color_index];
+    blend_percent = (hours / 3) / 8;
+    console.log(blend_percent);
+    prev_color_index = color_index - 1;
+    if (prev_color_index < 0) {
+      prev_color_index = 2;
+    }
+    prev_color = colors[prev_color_index];
+    dc = [];
+    $.each(color, function(i, channel) {
+      var c_delta;
+      c_delta = prev_color[i] - channel;
+      return dc[i] = channel + c_delta - parseInt(c_delta * blend_percent);
+    });
+    opacity = 0.2;
+    return "rgba(" + dc[0] + "," + dc[1] + "," + dc[2] + "," + opacity + ")";
   };
 
   renderTwitter = function(item) {
@@ -76,7 +99,7 @@
     $tweet.css({
       'font-size': "" + font_size + "px",
       'width': "" + width + "px",
-      'background-color': selectColor(),
+      'background-color': selectColor(item.data.date),
       'opacity': 0
     });
     return [$tweet, width];
@@ -156,23 +179,22 @@
       }
     });
     return $.each(all_rows, function(i, row) {
-      var $row, delta, item, item_width, min_width, per_item_delta, _i, _len;
+      var $row, delta, item, min_width, per_item_delta, _fn, _i, _len;
       $row = $('<div class="row"></div>');
       delta = max_row_width - row.width;
+      console.log(max_row_width, row.width, delta, row.length);
       per_item_delta = parseInt(delta / row.length);
       $row.css({
         width: "" + max_row_width + "px"
       });
-      console.log('max_row_width', max_row_width);
       min_width = 1e9;
       $content.append($row);
-      for (_i = 0, _len = row.length; _i < _len; _i++) {
-        item = row[_i];
+      _fn = function() {
+        var item_width;
         item_width = item.width + per_item_delta;
         item.html.css({
           width: item_width
         });
-        console.log('width%', item_width / item.width);
         if (item.type === 'twitter') {
           item.html.css({
             'font-size': item.font_size * (item_width / item.width)
@@ -180,8 +202,12 @@
         }
         $row.append(item.html);
         if (item_width < min_width) {
-          min_width = item_width;
+          return min_width = item_width;
         }
+      };
+      for (_i = 0, _len = row.length; _i < _len; _i++) {
+        item = row[_i];
+        _fn();
       }
       $row.css({
         height: min_width

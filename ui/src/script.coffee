@@ -33,12 +33,35 @@ renderInstagram = (item) ->
 
 # shade bg of twitter post based on time of day (in EST)
 
-selectColor = ->
-    return [
-        'rgba(255,0,0,0.1)'
-        'rgba(0,255,0,0.1)'
-        'rgba(0,0,255,0.1)'
-        ][parseInt(Math.random() * 3)]
+selectColor = (date) ->
+    console.log 'date', date
+    colors = [
+        [255,87,56]
+        [255,212,0]
+        [117,219,137]
+    ]
+    # hours = (new Date(date)).getUTCHours() -  5
+    hours = (new Date(date)).getHours()
+    if hours < 0
+        hours = 24 + hours
+
+    color_index = hours % 3
+    color = colors[color_index]
+
+    blend_percent = (hours / 3) / 8
+    console.log blend_percent
+    prev_color_index = color_index - 1
+    if prev_color_index < 0
+        prev_color_index = 2
+    prev_color = colors[prev_color_index]
+
+    dc = []
+    $.each color, (i, channel) ->
+        c_delta = prev_color[i] - channel
+        dc[i] = channel + c_delta - parseInt(c_delta * blend_percent)
+
+    opacity = 0.2
+    return "rgba(#{dc[0]},#{dc[1]},#{dc[2]},#{opacity})"
 
 renderTwitter = (item) ->
     score = item.score
@@ -85,7 +108,7 @@ renderTwitter = (item) ->
     $tweet.css
         'font-size': "#{ font_size }px"
         'width': "#{ width }px"
-        'background-color': selectColor()
+        'background-color': selectColor(item.data.date)
         'opacity': 0
 
     return [$tweet, width]
@@ -93,6 +116,7 @@ renderTwitter = (item) ->
 
 
 NOW = (new Date()).getTime()
+
 
 scoreInstagram = (item) ->
     time_delta = NOW - new Date(item.date).getTime()
@@ -162,24 +186,25 @@ displayItems = ->
     $.each all_rows, (i, row) ->
         $row = $('<div class="row"></div>')
         delta = max_row_width - row.width
+        console.log max_row_width, row.width, delta, row.length
         per_item_delta = parseInt(delta / row.length)
 
         $row.css
             width: "#{ max_row_width }px"
-        console.log 'max_row_width',max_row_width
+
         min_width = 1e9
         $content.append($row)
         for item in row
-            item_width = item.width + per_item_delta
-            item.html.css
-                width: item_width
-            console.log 'width%', item_width / item.width
-            if item.type is 'twitter'
+            do ->
+                item_width = item.width + per_item_delta
                 item.html.css
-                    'font-size': item.font_size * (item_width / item.width)
-            $row.append(item.html)
-            if item_width < min_width
-                min_width = item_width
+                    width: item_width
+                if item.type is 'twitter'
+                    item.html.css
+                        'font-size': item.font_size * (item_width / item.width)
+                $row.append(item.html)
+                if item_width < min_width
+                    min_width = item_width
 
         # truncate row height to smallest photo height (width since square)
         $row.css
