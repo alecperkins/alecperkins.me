@@ -214,8 +214,8 @@
             height: new_height
           });
         } else {
-          item.html.children().css({
-            'margin-top': height_delta / 2
+          item.html.children('img').css({
+            top: height_delta / 2
           });
         }
         $row.append(item.html);

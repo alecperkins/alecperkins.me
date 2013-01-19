@@ -219,8 +219,8 @@ displayItems = ->
                 #     'margin-top': (item.html.height() - child_height) / 5
             else
                 # Vertically center photos
-                item.html.children().css
-                    'margin-top': (height_delta / 2)
+                item.html.children('img').css
+                    top: (height_delta / 2)
 
             $row.append(item.html)
 
