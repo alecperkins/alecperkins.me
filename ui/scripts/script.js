@@ -30,7 +30,6 @@
 
   selectColor = function(date) {
     var blend_percent, color, color_index, colors, dc, hours, opacity, prev_color, prev_color_index;
-    console.log('date', date);
     colors = [[255, 87, 56], [255, 212, 0], [117, 219, 137]];
     hours = (new Date(date)).getHours();
     if (hours < 0) {
@@ -39,7 +38,6 @@
     color_index = hours % 3;
     color = colors[color_index];
     blend_percent = (hours / 3) / 8;
-    console.log(blend_percent);
     prev_color_index = color_index - 1;
     if (prev_color_index < 0) {
       prev_color_index = 2;
@@ -165,16 +163,16 @@
         _ref1 = renderTwitter(item), item.html = _ref1[0], item.width = _ref1[1];
       }
       item.html.attr('title', item.score);
-      if (row_width + item.width + 2 * padding < body_width) {
+      if (row_width + item.width < body_width) {
         new_row.push(item);
-        return row_width += item.width + 2 * padding;
+        return row_width += item.width;
       } else {
         if (row_width > max_row_width) {
           max_row_width = row_width;
         }
         new_row.width = row_width;
         all_rows.push(new_row);
-        row_width = item.width + 2 * padding;
+        row_width = item.width;
         return new_row = [item];
       }
     });
@@ -182,8 +180,7 @@
       var $row, delta, item, min_width, per_item_delta, _fn, _i, _len;
       $row = $('<div class="row"></div>');
       delta = max_row_width - row.width;
-      console.log(max_row_width, row.width, delta, row.length);
-      per_item_delta = parseInt(delta / row.length);
+      per_item_delta = delta / row.length;
       $row.css({
         width: "" + max_row_width + "px"
       });
@@ -195,11 +192,6 @@
         item.html.css({
           width: item_width
         });
-        if (item.type === 'twitter') {
-          item.html.css({
-            'font-size': item.font_size * (item_width / item.width)
-          });
-        }
         $row.append(item.html);
         if (item_width < min_width) {
           return min_width = item_width;
@@ -213,11 +205,13 @@
         height: min_width
       });
       return $.each(row, function(j, item) {
-        var height_delta;
-        height_delta = min_width - item.html.height();
+        var height_delta, item_height, new_height;
+        item_height = item.html.height();
+        height_delta = min_width - item_height;
         if (item.type === 'twitter') {
+          new_height = item_height + height_delta;
           item.html.css({
-            height: item.html.height() + height_delta
+            height: new_height
           });
         } else {
           item.html.children().css({

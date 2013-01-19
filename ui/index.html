@@ -27,19 +27,23 @@
     <style>
         @import url(http://fonts.googleapis.com/css?family=Open+Sans:300italic,600italic,300,600);
         body {
-            margin: 0 auto;
+            margin: 19px auto;
             font-family: 'Open Sans';
             font-weight: 300;
             font-size: 16px;
             max-width: 1224px;
             overflow-y: scroll;
             line-height: 1.5;
+            background-color: #111;
+            color: #111;
         }
         div.row {
             font-size: 0;
             margin: 0 auto;
             text-align: center;
             overflow: hidden;
+            background-color: white;
+            /*border: 1px solid red;*/
         }
         div.item {
             display: inline-block;
@@ -70,18 +74,33 @@
         strong {
             font-weight: 600;
         }
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 19px;
+            background: rgba(0,0,0,0.5);
+            z-index: 2;
+        }
+        #index-link {
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            position: absolute;
+            top: 0;
+            left: 4px;
+        }
+        #index-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <nav>
         <a id="index-link" href="http://alecperkins.net/" class="">&laquo; alecperkins.net</a>
     </nav>
-
-
-      <div class="content">
-          
-      </div>
-
+    <div class="content"></div>
     <script src="/static/scripts/noat.js"></script>
     <script src="/static/scripts/script.js"></script>
 

@@ -34,7 +34,6 @@ renderInstagram = (item) ->
 # shade bg of twitter post based on time of day (in EST)
 
 selectColor = (date) ->
-    console.log 'date', date
     colors = [
         [255,87,56]
         [255,212,0]
@@ -49,7 +48,6 @@ selectColor = (date) ->
     color = colors[color_index]
 
     blend_percent = (hours / 3) / 8
-    console.log blend_percent
     prev_color_index = color_index - 1
     if prev_color_index < 0
         prev_color_index = 2
@@ -170,38 +168,35 @@ displayItems = ->
         item.html.attr('title', item.score)
         # console.log item.width
 
-        if row_width + item.width + 2 * padding < body_width
+        if row_width + item.width < body_width
             new_row.push(item)
-            row_width += item.width + 2 * padding
+            row_width += item.width
         else
             # console.log row_width
             if row_width > max_row_width
                 max_row_width = row_width
             new_row.width = row_width
             all_rows.push(new_row)
-            row_width = item.width + 2 * padding
+            row_width = item.width
             new_row = [item]
 
 
     $.each all_rows, (i, row) ->
         $row = $('<div class="row"></div>')
         delta = max_row_width - row.width
-        console.log max_row_width, row.width, delta, row.length
-        per_item_delta = parseInt(delta / row.length)
-
+        per_item_delta = delta / row.length
+        # console.log 'max_row_width',max_row_width, 'row.width',row.width, 'delta',delta, 'row.length',row.length, 'per_item_delta', per_item_delta
         $row.css
             width: "#{ max_row_width }px"
 
         min_width = 1e9
         $content.append($row)
+
         for item in row
             do ->
                 item_width = item.width + per_item_delta
                 item.html.css
                     width: item_width
-                if item.type is 'twitter'
-                    item.html.css
-                        'font-size': item.font_size * (item_width / item.width)
                 $row.append(item.html)
                 if item_width < min_width
                     min_width = item_width
@@ -211,10 +206,13 @@ displayItems = ->
             height: min_width
 
         $.each row, (j, item) ->
-            height_delta = min_width - item.html.height()
+            item_height = item.html.height()
+            height_delta = min_width - item_height
             if item.type is 'twitter'
+                new_height = item_height + height_delta
                 item.html.css
-                    height: item.html.height() + height_delta
+                    height: new_height
+                    # 'font-size': item.font_size * (item_height / new_height)
                 # $child_p = item.html.find('p')
                 # child_height = $child_p.height()
                 # $child_p.css
