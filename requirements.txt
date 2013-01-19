@@ -2,4 +2,3 @@ Flask==0.9
 gunicorn==0.16.1
 oauth2==1.5.211
 requests==1.0.3
-pylibmc==1.2.3
