@@ -214,6 +214,9 @@
             height: new_height
           });
         } else {
+          if (height_delta > 0) {
+            height_delta = 0;
+          }
           item.html.children('img').css({
             top: height_delta / 2
           });

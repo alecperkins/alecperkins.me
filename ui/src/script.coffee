@@ -219,6 +219,8 @@ displayItems = ->
                 #     'margin-top': (item.html.height() - child_height) / 5
             else
                 # Vertically center photos
+                if height_delta > 0
+                    height_delta = 0 # make sure they don't push down from the top
                 item.html.children('img').css
                     top: (height_delta / 2)
 
