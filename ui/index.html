@@ -39,17 +39,30 @@
             font-size: 0;
             margin: 0 auto;
             text-align: center;
+            overflow: hidden;
         }
         div.item {
             /*width: 306px;*/
             display: inline-block;
-            margin: 24px;
+            /*margin: 24px;*/
             text-align: left;
-            vertical-align: middle;
+            vertical-align: top;
+            -webkit-transition-property: opacity;
+            -webkit-transition-duration: 1s;
+            position: relative;
+        }
+        div.item a.link {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
         }
         div.tweet {
             /*padding: 1em;*/
             box-sizing: border-box;
+            padding: 24px;
+        }
+        div.tweet p {
+            margin: 0;
         }
         div.photo {
             /*height: 306px;*/

@@ -4,8 +4,6 @@ max_score = -1
 min_score = 1e10
 
 
-# calculate item widths
-# assemble rows
 
 
 calcWidth = (score) ->
@@ -30,9 +28,17 @@ renderInstagram = (item) ->
     width = calcWidth(score)
     $photo.css
         'width': "#{ width }px"
+        opacity: 0
     return [$photo, width]
 
+# shade bg of twitter post based on time of day (in EST)
 
+selectColor = ->
+    return [
+        'rgba(255,0,0,0.1)'
+        'rgba(0,255,0,0.1)'
+        'rgba(0,0,255,0.1)'
+        ][parseInt(Math.random() * 3)]
 
 renderTwitter = (item) ->
     score = item.score
@@ -60,7 +66,7 @@ renderTwitter = (item) ->
 
     $tweet = $("""
         <div class="item tweet">
-            #{ text.toString() }
+            <p>#{ text.toString() }</p>
             <a class="link" href="https://twitter.com/alecperkins/status/#{ tweet.id }">#</a>
         </div>
     """)
@@ -70,14 +76,17 @@ renderTwitter = (item) ->
         $tag.text($tag.attr('data-display_url'))
 
     half_grid = grid_size / 2
-    font_size = (half_grid + (score / max_score * half_grid)).toFixed(0)
+    font_size = (half_grid + (score / max_score * half_grid)).toFixed(0) - 2
 
     if font_size > grid_size
         font_size = grid_size
     width = calcWidth(score)
+    item.font_size = font_size
     $tweet.css
         'font-size': "#{ font_size }px"
         'width': "#{ width }px"
+        'background-color': selectColor()
+        'opacity': 0
 
     return [$tweet, width]
 
@@ -120,11 +129,14 @@ assembleItems = ->
 
 displayItems = ->
     $content.empty()
-    window_width = $(window).width()
+    body_width = $('body').width()
     new_row = []
     row_width = 0
     all_rows = []
     max_row_width = 0
+
+    padding = 24
+
     $.each item_list, (i, item) ->
         if item.type is 'instagram'
             [item.html, item.width] = renderInstagram(item)
@@ -133,25 +145,68 @@ displayItems = ->
 
         item.html.attr('title', item.score)
         # console.log item.width
-        if row_width + item.width + 48 < window_width
+
+        if row_width + item.width + 2 * padding < body_width
             new_row.push(item)
-            row_width += item.width + 48
+            row_width += item.width + 2 * padding
         else
-            console.log row_width
+            # console.log row_width
             if row_width > max_row_width
                 max_row_width = row_width
+            new_row.width = row_width
             all_rows.push(new_row)
-            row_width = item.width + 48
+            row_width = item.width + 2 * padding
             new_row = [item]
 
 
     $.each all_rows, (i, row) ->
         $row = $('<div class="row"></div>')
+        delta = max_row_width - row.width
+        per_item_delta = parseInt(delta / row.length)
+
         $row.css
             width: "#{ max_row_width }px"
-        for i in row
-            $row.append(i.html)
+        console.log 'max_row_width',max_row_width
+        min_width = 1e9
         $content.append($row)
+        for item in row
+            item_width = item.width + per_item_delta
+            item.html.css
+                width: item_width
+            console.log 'width%', item_width / item.width
+            if item.type is 'twitter'
+                item.html.css
+                    'font-size': item.font_size * (item_width / item.width)
+            $row.append(item.html)
+            if item_width < min_width
+                min_width = item_width
+
+        # truncate row height to smallest photo height (width since square)
+        $row.css
+            height: min_width
+
+        $.each row, (j, item) ->
+            height_delta = min_width - item.html.height()
+            if item.type is 'twitter'
+                item.html.css
+                    height: item.html.height() + height_delta
+                # $child_p = item.html.find('p')
+                # child_height = $child_p.height()
+                # $child_p.css
+                #     'margin-top': (item.html.height() - child_height) / 5
+            else
+                # Vertically center photos
+                item.html.children().css
+                    'margin-top': (height_delta / 2)
+
+            $row.append(item.html)
+
+            setTimeout ->
+                item.html.css
+                    opacity: 1
+            , 100 * j * i
+
+
 
 resize_timeout = null
 $(window).on 'resize', ->
